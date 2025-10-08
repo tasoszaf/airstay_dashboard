@@ -2,39 +2,52 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import requests
-from msal import PublicClientApplication
+from msal import ConfidentialClientApplication, PublicClientApplication
+from urllib.parse import urlencode, urlparse, parse_qs
 
 # --- Ρυθμίσεις σελίδας ---
 st.set_page_config(page_title="🏠Αναφορές", page_icon="🏠", layout="wide")
 st.title("🏠Συγκεντρωτική Αναφορά")
 
-# --- Azure AD settings ---
+# --- Azure AD app settings ---
 CLIENT_ID = "123f0bbb-bb67-4250-9b60-a2cf6a896815"
 TENANT_ID = "87751865-5688-433e-8997-597f0d9ba4d6"
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
+REDIRECT_URI = "https://airstaydashboard-4ka8sewvw8xmmscwxvzjhc.streamlit.app/"
 SCOPE = ["Files.Read", "Sites.Read.All", "User.Read"]
 
-REDIRECT_URI = st.secrets.get("redirect_uri", "https://airstaydashboard-4ka8sewvw8xmmscwxvzjhc.streamlit.app")  # ή το deployed URL
-
-# --- MSAL PublicClientApplication ---
+# --- MSAL PublicClientApplication για Authorization Code Flow ---
 app = PublicClientApplication(CLIENT_ID, authority=AUTHORITY)
 
-# --- Browser login ---
-if "token" not in st.session_state:
-    login_url = app.get_authorization_request_url(SCOPE, redirect_uri=REDIRECT_URI)
-    st.markdown(f"[🔑 Συνδεθείτε με εταιρικό λογαριασμό]({login_url})")
-    code = st.experimental_get_query_params().get("code")
+# --- Συνάρτηση για λήψη token ---
+def get_token():
+    if "access_token" in st.session_state:
+        return st.session_state.access_token
+
+    # Έλεγχος για "code" στα query params
+    query_params = st.experimental_get_query_params()
+    code = query_params.get("code")
     if code:
+        # Παίρνουμε token με authorization code
         result = app.acquire_token_by_authorization_code(code[0], scopes=SCOPE, redirect_uri=REDIRECT_URI)
         if "access_token" in result:
-            st.session_state.token = result["access_token"]
+            st.session_state.access_token = result["access_token"]
+            # Καθαρίζουμε το URL για να μην εμφανίζεται το code
+            st.experimental_set_query_params()
+            return st.session_state.access_token
         else:
             st.error(f"❌ Σφάλμα λήψης token: {result.get('error_description')}")
-    st.stop()
+            st.stop()
+    else:
+        # Δημιουργία URL login
+        auth_url = app.get_authorization_request_url(SCOPE, redirect_uri=REDIRECT_URI)
+        st.markdown(f"[🔑 Συνδεθείτε με εταιρικό λογαριασμό]({auth_url})")
+        st.stop()
 
-access_token = st.session_state.token
+# --- Παίρνουμε token ---
+access_token = get_token()
 
-# --- Teams/OneDrive Excel URL (Graph API) ---
+# --- Graph API URL του Excel ---
 EXCEL_GRAPH_URL = "https://graph.microsoft.com/v1.0/sites/341375e1-13a9-491a-97c8-964612df0b6a/drive/root:/Οργάνωση%20κρατήσεων%20-%20Excel/Βιβλίο%20Καταλυμάτων%202025.xlsx:/content"
 
 # --- Κατέβασμα Excel ---
@@ -79,7 +92,7 @@ else:
     months = ["Όλοι οι μήνες"] + months_in_data
     selected_month = st.selectbox("📅 Επιλέξτε μήνα:", months)
 
-    # --- Εμφάνιση συγκεντρωτικού πίνακα ---
+    # --- Συγκεντρωτικός πίνακας ---
     if selected_month != "Όλοι οι μήνες":
         df_month = df[df["ΜΗΝΑΣ"] == selected_month].copy()
         grouped = df_month.groupby("ΠΛΑΤΦΟΡΜΑ").agg({"ΤΙΜΗ":"sum","ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ":"sum"}).reset_index()
@@ -106,4 +119,3 @@ else:
     ).properties(width=700, height=400)
 
     st.altair_chart(chart, use_container_width=True)
-
