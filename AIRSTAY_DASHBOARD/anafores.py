@@ -11,7 +11,7 @@ st.title("🏠Συγκεντρωτική Αναφορά")
 
 # --- Ρυθμίσεις Azure AD ---
 CLIENT_ID = "123f0bbb-bb67-4250-9b60-a2cf6a896815"
-CLIENT_SECRET = "lz~8Q~WnNNkXiyPdToKzE1F5DbNh1c~AZ87N6b-0" 
+CLIENT_SECRET = "lz~8Q~WnNNkXiyPdToKzE1F5DbNh1c~AZ87N6b-0"  # χρειάζεται για server-side flow
 TENANT_ID = "87751865-5688-433e-8997-597f0d9ba4d6"
 REDIRECT_URI = "http://localhost:8501/"
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
@@ -29,7 +29,7 @@ params = {
 auth_url = f"{AUTHORITY}/oauth2/v2.0/authorize?{urllib.parse.urlencode(params)}"
 
 # --- Παίρνουμε τον authorization code από query parameters ---
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 code = query_params.get("code", [None])[0]
 
 if not code:
