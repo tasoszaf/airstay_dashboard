@@ -8,7 +8,7 @@ st.set_page_config(page_title="🏠Αναφορές", page_icon="🏠", layout="
 st.title("🏠Συγκεντρωτική Αναφορά")
 
 # --- Διαδρομή Excel στον υπολογιστή ---
-excel_path = "/Users/anastasioszafeiriou/OneDrive - AIRSTAYIKE/Βιβλίο Καταλυμάτων 2025.xlsx"
+excel_path = "/Users/anastasioszafeiriou/Library/CloudStorage/OneDrive-SharedLibraries-AIRSTAYIKE/Airstay Team - Έγγραφα/Οργάνωση κρατήσεων - Excel/Βιβλίο Καταλυμάτων 2025.xlsx"
 
 # --- Χάρτης αριθμών -> ονόματα μηνών ---
 month_map = {
