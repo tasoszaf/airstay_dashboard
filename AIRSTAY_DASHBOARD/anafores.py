@@ -14,7 +14,7 @@ TENANT_ID = "87751865-5688-433e-8997-597f0d9ba4d6"
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 SCOPE = ["Files.Read", "Sites.Read.All", "User.Read"]
 
-REDIRECT_URI = st.secrets.get("redirect_uri", "http://localhost:8501/")  # ή το deployed URL
+REDIRECT_URI = st.secrets.get("redirect_uri", "https://airstaydashboard-4ka8sewvw8xmmscwxvzjhc.streamlit.app")  # ή το deployed URL
 
 # --- MSAL PublicClientApplication ---
 app = PublicClientApplication(CLIENT_ID, authority=AUTHORITY)
