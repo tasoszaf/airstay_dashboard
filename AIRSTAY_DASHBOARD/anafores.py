@@ -38,10 +38,11 @@ if uploaded_file is not None:
             df = sheets[selected_sheet]
 
             # Αντιστοίχιση αριθμού μήνα -> όνομα
+            df = df.dropna(subset=["ΜΗΝΑΣ"])
             df["ΜΗΝΑΣ"] = df["ΜΗΝΑΣ"].map(month_map)
 
             # --- Dropdown μηνών με φυσική σειρά ---
-            months_in_data = [m for m in month_order if m in df["ΜΗΝΑΣ"].dropna().unique()]
+            months_in_data = [m for m in month_order if m in df["ΜΗΝΑΣ"].unique()]
             months = ["Όλοι οι μήνες"] + months_in_data
             selected_month = st.selectbox("📅 Επιλέξτε μήνα:", months)
 
@@ -60,6 +61,8 @@ if uploaded_file is not None:
                         "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum"
                     }).reset_index()
                     grouped.rename(columns={"ΤΙΜΗ": "ΤΖΙΡΟΣ"}, inplace=True)
+
+                    # Format μόνο για εμφάνιση
                     grouped["ΤΖΙΡΟΣ"] = grouped["ΤΖΙΡΟΣ"].map(lambda x: f"{x:,.2f} €")
                     grouped["ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ"] = grouped["ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ"].astype(int)
 
@@ -71,29 +74,36 @@ if uploaded_file is not None:
                         "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum",
                         "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
                     })
+
                     st.markdown("---")
                     st.markdown(
                         f"**Σύνολο Μήνα:** ΤΖΙΡΟΣ: {total_row['ΤΙΜΗ']:,.2f} € | "
                         f"Διανυκτερεύσεις: {int(total_row['ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ'])} | "
                         f"Έσοδα Ιδιοκτήτη: {total_row['ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ']:,.2f} €"
                     )
+
                 else:
+                    # Όλοι οι μήνες
                     grouped_all = df.groupby("ΠΛΑΤΦΟΡΜΑ").agg({
                         "ΤΙΜΗ": "sum",
                         "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum"
                     }).reset_index()
                     grouped_all.rename(columns={"ΤΙΜΗ": "ΤΖΙΡΟΣ"}, inplace=True)
+
+                    # Υπολογισμός totals πριν format
+                    total_all = df.agg({
+                        "ΤΙΜΗ": "sum",
+                        "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum",
+                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
+                    })
+
+                    # Format μόνο για εμφάνιση
                     grouped_all["ΤΖΙΡΟΣ"] = grouped_all["ΤΖΙΡΟΣ"].map(lambda x: f"{x:,.2f} €")
                     grouped_all["ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ"] = grouped_all["ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ"].astype(int)
 
                     st.subheader("📊 Συγκεντρωτικός Πίνακας (Όλοι οι μήνες)")
                     st.dataframe(grouped_all, use_container_width=True, hide_index=True)
 
-                    total_all = df.agg({
-                        "ΤΙΜΗ": "sum",
-                        "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum",
-                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
-                    })
                     st.markdown("---")
                     st.markdown(
                         f"**Σύνολο Όλων των Μηνών (όλες οι πλατφόρμες):** "
@@ -117,10 +127,7 @@ if uploaded_file is not None:
                     value_name="Ποσό"
                 )
 
-                # Αλλαγή ονόματος σε ΤΖΙΡΟΣ
                 fixed_long["Κατηγορία"] = fixed_long["Κατηγορία"].replace({"ΤΙΜΗ": "ΤΖΙΡΟΣ"})
-
-                # Προσθήκη μορφοποιημένης στήλης για tooltip
                 fixed_long["Ποσό (€)"] = fixed_long["Ποσό"].map(lambda x: f"{x:,.2f} €")
 
                 chart = alt.Chart(fixed_long).mark_line(point=True).encode(
