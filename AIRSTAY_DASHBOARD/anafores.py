@@ -5,7 +5,7 @@ import altair as alt
 # ==============================
 # 📄 Τοπικό αρχείο Excel
 # ==============================
-FILE_PATH = "/Users/anastasioszafeiriou/Library/CloudStorage/OneDrive-AIRSTAYIKE/Βιβλίο Καταλυμάτων 2025.xlsx"
+FILE_PATH = "/Users/anastasioszafeiriou/Library/CloudStorage/OneDrive-SharedLibraries-AIRSTAYIKE/Airstay Team - Έγγραφα/Οργάνωση κρατήσεων - Excel/Βιβλίο Καταλυμάτων 2025.xlsx"
 
 # ==============================
 # 🏠 Streamlit setup
