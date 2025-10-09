@@ -1,57 +1,14 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import requests
-from msal import ConfidentialClientApplication
-from io import BytesIO
 
 # ==============================
-# 🔐 ΡΥΘΜΙΣΕΙΣ ΑΣΦΑΛΕΙΑΣ (Azure App)
+# 📄 Τοπικό αρχείο Excel
 # ==============================
-TENANT_ID = "87751865-5688-433e-8997-597f0d9ba4d6"
-CLIENT_ID = "123f0bbb-bb67-4250-9b60-a2cf6a896815"
-CLIENT_SECRET = "lz~8Q~WnNNkXiyPdToKzE1F5DbNh1c~AZ87N6b-0"
+FILE_PATH = "/Users/anastasioszafeiriou/Library/CloudStorage/OneDrive-AIRSTAYIKE/Βιβλίο Καταλυμάτων 2025.xlsx"
 
 # ==============================
-# 📌 SITE & FILE ΔΙΑΔΡΟΜΗ
-# ==============================
-# Χρήση του site-id που βρήκαμε από το URL
-SITE_ID = "airstayteam.sharepoint.com,43ee829d-bc9f-44ca-9b5e-ea12a4ac4271,f662218a-590e-4fe8-b82c-c9564ff6d5b9"
-
-# Διαδρομή αρχείου μέσα στο drive
-FILE_PATH = "/Documents/Οργάνωση κρατήσεων-Excel/Βιβλίο Καταλυμάτων 2025.xlsx"
-
-# ==============================
-# 🎟️ AUTHENTICATION (Client Credentials Flow)
-# ==============================
-AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
-SCOPE = ["https://graph.microsoft.com/.default"]
-
-app = ConfidentialClientApplication(
-    CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
-)
-
-token_result = app.acquire_token_for_client(scopes=SCOPE)
-if "access_token" not in token_result:
-    st.error("❌ Αποτυχία σύνδεσης με Microsoft Graph API.")
-    st.stop()
-
-access_token = token_result["access_token"]
-
-# ==============================
-# 📂 ΛΗΨΗ ΤΟΥ ΑΡΧΕΙΟΥ ΑΠΟ SHAREPOINT
-# ==============================
-try:
-    file_url = f"https://graph.microsoft.com/v1.0/sites/{SITE_ID}/drive/root:{FILE_PATH}:/content"
-    res_file = requests.get(file_url, headers={"Authorization": f"Bearer {access_token}"})
-    res_file.raise_for_status()
-    file_bytes = res_file.content
-except Exception as e:
-    st.error(f"⚠️ Σφάλμα κατά τη λήψη του αρχείου από SharePoint: {e}")
-    st.stop()
-
-# ==============================
-# 📊 STREAMLIT DASHBOARD
+# 🏠 Streamlit setup
 # ==============================
 st.set_page_config(page_title="🏠Αναφορές", page_icon="🏠", layout="wide")
 st.title("🏠 Συγκεντρωτική Αναφορά")
@@ -71,8 +28,8 @@ allowed_sheets = [
 ]
 
 try:
-    # Διαβάζουμε όλα τα φύλλα από το Excel
-    sheets = pd.read_excel(BytesIO(file_bytes), sheet_name=None)
+    # Διαβάζουμε όλα τα φύλλα
+    sheets = pd.read_excel(FILE_PATH, sheet_name=None)
     sheet_names = [name for name in allowed_sheets if name in sheets.keys()]
 
     if not sheet_names:
