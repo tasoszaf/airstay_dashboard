@@ -12,15 +12,16 @@ TENANT_ID = "87751865-5688-433e-8997-597f0d9ba4d6"
 CLIENT_ID = "123f0bbb-bb67-4250-9b60-a2cf6a896815"
 CLIENT_SECRET = "lz~8Q~WnNNkXiyPdToKzE1F5DbNh1c~AZ87N6b-0"
 
-# 👉 Προσαρμόστε με βάση το SharePoint URL
-# Παράδειγμα URL:
-# https://yourcompany.sharepoint.com/sites/FinanceTeam/Shared Documents/Reports/report.xlsx
+# ==============================
+# 📌 SITE & FILE ΔΙΑΔΡΟΜΗ
+# ==============================
+# Χρήση του site-id που βρήκαμε από το URL
+SITE_ID = "airstayteam.sharepoint.com,43ee829d-bc9f-44ca-9b5e-ea12a4ac4271,f662218a-590e-4fe8-b82c-c9564ff6d5b9"
 
-SITE_HOSTNAME = "airstayteam.sharepoint.com"      # το domain του SharePoint
-SITE_PATH = "/sites/AirstayTeam"                  # path του site (μετά το domain)
-FILE_PATH = "/Documents/Οργάνωση κρατήσεων-Excel/Βιβλίο Καταλυμάτων 2025.xlsx"  # διαδρομή αρχείου μέσα στο site
+# Διαδρομή αρχείου μέσα στο drive
+FILE_PATH = "/Documents/Οργάνωση κρατήσεων-Excel/Βιβλίο Καταλυμάτων 2025.xlsx"
 
-# ==============================33
+# ==============================
 # 🎟️ AUTHENTICATION (Client Credentials Flow)
 # ==============================
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
@@ -41,14 +42,7 @@ access_token = token_result["access_token"]
 # 📂 ΛΗΨΗ ΤΟΥ ΑΡΧΕΙΟΥ ΑΠΟ SHAREPOINT
 # ==============================
 try:
-    # 1️⃣ Παίρνουμε το site ID
-    site_url = f"https://graph.microsoft.com/v1.0/sites/{SITE_HOSTNAME}:{SITE_PATH}"
-    res_site = requests.get(site_url, headers={"Authorization": f"Bearer {access_token}"})
-    res_site.raise_for_status()
-    site_id = res_site.json()["id"]
-
-    # 2️⃣ Κατεβάζουμε το αρχείο ως bytes
-    file_url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/drive/root:{FILE_PATH}:/content"
+    file_url = f"https://graph.microsoft.com/v1.0/sites/{SITE_ID}/drive/root:{FILE_PATH}:/content"
     res_file = requests.get(file_url, headers={"Authorization": f"Bearer {access_token}"})
     res_file.raise_for_status()
     file_bytes = res_file.content
@@ -77,7 +71,7 @@ allowed_sheets = [
 ]
 
 try:
-    # Διαβάζουμε όλα τα φύλλα από το Excel που ήρθε από το SharePoint
+    # Διαβάζουμε όλα τα φύλλα από το Excel
     sheets = pd.read_excel(BytesIO(file_bytes), sheet_name=None)
     sheet_names = [name for name in allowed_sheets if name in sheets.keys()]
 
@@ -174,12 +168,4 @@ try:
             x=alt.X('ΜΗΝΑΣ:N', sort=month_order, title="Μήνας"),
             y=alt.Y('Ποσό:Q', title="€"),
             color=alt.Color('Κατηγορία:N',
-                            scale=alt.Scale(domain=["ΤΖΙΡΟΣ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ"],
-                                            range=["#1f77b4", "#2ca02c"])),
-            tooltip=['ΜΗΝΑΣ', 'Κατηγορία', 'Ποσό (€)']
-        ).properties(width=700, height=400)
-
-        st.altair_chart(chart, use_container_width=True)
-
-except Exception as e:
-    st.error(f"⚠️ Σφάλμα κατά την ανάγνωση του αρχείου: {e}")
+                            scale=alt.Scale(domain=["ΤΖΙΡΟΣ
