@@ -168,4 +168,12 @@ try:
             x=alt.X('ΜΗΝΑΣ:N', sort=month_order, title="Μήνας"),
             y=alt.Y('Ποσό:Q', title="€"),
             color=alt.Color('Κατηγορία:N',
-                            scale=alt.Scale(domain=["ΤΖΙΡΟΣ
+                            scale=alt.Scale(domain=["ΤΖΙΡΟΣ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ"],
+                                            range=["#1f77b4", "#2ca02c"])),
+            tooltip=['ΜΗΝΑΣ', 'Κατηγορία', 'Ποσό (€)']
+        ).properties(width=700, height=400)
+
+        st.altair_chart(chart, use_container_width=True)
+
+except Exception as e:
+    st.error(f"⚠️ Σφάλμα κατά την ανάγνωση του αρχείου: {e}")
