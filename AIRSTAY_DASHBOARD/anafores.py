@@ -9,7 +9,7 @@ st.set_page_config(page_title="🏠Αναφορές", page_icon="🏠", layout="
 st.title("🏠Συγκεντρωτική Αναφορά")
 
 # --- Διαβάζουμε το Excel απευθείας ---
-file_path = "Βιβλίο Καταλυμάτων 2025-2.xlsx"  # όνομα του αρχείου μέσα στο φάκελο
+file_path = "data.xlsx" 
 try:
     sheets = pd.read_excel(file_path, sheet_name=None)
 except Exception as e:
