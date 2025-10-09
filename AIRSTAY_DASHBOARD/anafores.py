@@ -8,10 +8,11 @@ st.set_page_config(page_title="🏠Αναφορές", page_icon="🏠", layout="
 # --- Τίτλος ---
 st.title("🏠Συγκεντρωτική Αναφορά")
 
-# --- Διαβάζουμε το Excel απευθείας ---
-file_path = "data.xlsx" 
+# --- Διαβάζουμε το Excel απευθείας από GitHub ---
+url = "https://raw.githubusercontent.com/tasoszaf/airstay_dashboard/main/AIRSTAY_DASHBOARD/data.xlsx"
+
 try:
-    sheets = pd.read_excel(file_path, sheet_name=None)
+    sheets = pd.read_excel(url, sheet_name=None)
 except Exception as e:
     st.error(f"⚠️ Σφάλμα κατά την ανάγνωση του αρχείου: {e}")
     st.stop()
