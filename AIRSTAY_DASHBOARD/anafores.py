@@ -16,7 +16,7 @@ CLIENT_SECRET = "lz~8Q~WnNNkXiyPdToKzE1F5DbNh1c~AZ87N6b-0"
 # Παράδειγμα URL:
 # https://yourcompany.sharepoint.com/sites/FinanceTeam/Shared Documents/Reports/report.xlsx
 
-SITE_HOSTNAME = "https://airstayteam.sharepoint.com"      # το domain του SharePoint
+SITE_HOSTNAME = "airstayteam.sharepoint.com"      # το domain του SharePoint
 SITE_PATH = "/sites/AirstayTeam"                  # path του site (μετά το domain)
 FILE_PATH = "/Documents/Οργάνωση κρατήσεων-Excel/Βιβλίο Καταλυμάτων 2025.xlsx"  # διαδρομή αρχείου μέσα στο site
 
