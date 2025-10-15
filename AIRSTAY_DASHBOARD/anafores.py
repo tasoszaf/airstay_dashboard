@@ -21,8 +21,8 @@ month_order = list(month_map.values())
 
 # --- Λίστα επιτρεπόμενων φύλλων ---
 allowed_sheets = [
-    "ZILEAN","NAUTILUS","ORIANNA","THRESH","KALISTA","ELISE","ANIVIA",
-    "JAAX","NAMI","AKALI","CHELI","KOMOS","FINIKAS","ZED"
+    "ZILEAN", "NAUTILUS", "ORIANNA", "THRESH", "KALISTA", "ELISE", "ANIVIA",
+    "JAAX", "NAMI", "AKALI", "CHELI", "KOMOS", "FINIKAS", "ZED"
 ]
 
 if uploaded_file is not None:
@@ -41,12 +41,18 @@ if uploaded_file is not None:
             df = df.dropna(subset=["ΜΗΝΑΣ"])
             df["ΜΗΝΑΣ"] = df["ΜΗΝΑΣ"].map(month_map)
 
+            # Αν η στήλη προμήθειας είναι κενή, αντικαθίσταται με 0
+            df["ΠΡΟΜΗΘΕΙΑ AIRSTAY"] = df["ΠΡΟΜΗΘΕΙΑ AIRSTAY"].fillna(0)
+
             # --- Dropdown μηνών με φυσική σειρά ---
             months_in_data = [m for m in month_order if m in df["ΜΗΝΑΣ"].unique()]
             months = ["Όλοι οι μήνες"] + months_in_data
             selected_month = st.selectbox("📅 Επιλέξτε μήνα:", months)
 
-            required_cols = ["ΤΙΜΗ", "ΠΛΑΤΦΟΡΜΑ", "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ", "ΜΗΝΑΣ"]
+            required_cols = [
+                "ΤΙΜΗ", "ΠΛΑΤΦΟΡΜΑ", "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ",
+                "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ", "ΠΡΟΜΗΘΕΙΑ AIRSTAY", "ΜΗΝΑΣ"
+            ]
             missing = [col for col in required_cols if col not in df.columns]
             if missing:
                 st.error(f"❌ Λείπουν οι στήλες: {', '.join(missing)}")
@@ -72,14 +78,17 @@ if uploaded_file is not None:
                     total_row = df_month.agg({
                         "ΤΙΜΗ": "sum",
                         "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum",
-                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
+                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum",
+                        "ΠΡΟΜΗΘΕΙΑ AIRSTAY": "sum"
                     })
 
                     st.markdown("---")
                     st.markdown(
-                        f"**Σύνολο Μήνα:** ΤΖΙΡΟΣ: {total_row['ΤΙΜΗ']:,.2f} € | "
+                        f"**Σύνολο Μήνα:** "
+                        f"ΤΖΙΡΟΣ: {total_row['ΤΙΜΗ']:,.2f} € | "
                         f"Διανυκτερεύσεις: {int(total_row['ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ'])} | "
-                        f"Έσοδα Ιδιοκτήτη: {total_row['ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ']:,.2f} €"
+                        f"Έσοδα Ιδιοκτήτη: {total_row['ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ']:,.2f} € | "
+                        f"Προμήθεια Airstay: {total_row['ΠΡΟΜΗΘΕΙΑ AIRSTAY']:,.2f} €"
                     )
 
                 else:
@@ -94,7 +103,8 @@ if uploaded_file is not None:
                     total_all = df.agg({
                         "ΤΙΜΗ": "sum",
                         "ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ": "sum",
-                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
+                        "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum",
+                        "ΠΡΟΜΗΘΕΙΑ AIRSTAY": "sum"
                     })
 
                     # Format μόνο για εμφάνιση
@@ -109,34 +119,47 @@ if uploaded_file is not None:
                         f"**Σύνολο Όλων των Μηνών (όλες οι πλατφόρμες):** "
                         f"ΤΖΙΡΟΣ: {total_all['ΤΙΜΗ']:,.2f} € | "
                         f"Διανυκτερεύσεις: {int(total_all['ΑΡΙΘΜΟΣ ΔΙΑΝΥΚΤΕΡΕΥΣΕΩΝ'])} | "
-                        f"Έσοδα Ιδιοκτήτη: {total_all['ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ']:,.2f} €"
+                        f"Έσοδα Ιδιοκτήτη: {total_all['ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ']:,.2f} € | "
+                        f"Προμήθεια Airstay: {total_all['ΠΡΟΜΗΘΕΙΑ AIRSTAY']:,.2f} €"
                     )
 
                 # --- Σταθερό γράφημα γραμμών ---
-                st.subheader("📈 ΤΖΙΡΟΣ & Έσοδα Ιδιοκτήτη")
+                st.subheader("📈 ΤΖΙΡΟΣ, Έσοδα Ιδιοκτήτη & Προμήθεια Airstay")
 
                 fixed_chart = df.groupby("ΜΗΝΑΣ").agg({
                     "ΤΙΜΗ": "sum",
-                    "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum"
+                    "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "sum",
+                    "ΠΡΟΜΗΘΕΙΑ AIRSTAY": "sum"
                 }).reindex(month_order, fill_value=0).reset_index()
 
                 fixed_long = fixed_chart.melt(
                     id_vars="ΜΗΝΑΣ",
-                    value_vars=["ΤΙΜΗ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ"],
+                    value_vars=["ΤΙΜΗ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ", "ΠΡΟΜΗΘΕΙΑ AIRSTAY"],
                     var_name="Κατηγορία",
                     value_name="Ποσό"
                 )
 
-                fixed_long["Κατηγορία"] = fixed_long["Κατηγορία"].replace({"ΤΙΜΗ": "ΤΖΙΡΟΣ"})
-                fixed_long["Ποσό (€)"] = fixed_long["Ποσό"].map(lambda x: f"{x:,.2f} €")
+                fixed_long["Κατηγορία"] = fixed_long["Κατηγορία"].replace({
+                    "ΤΙΜΗ": "ΤΖΙΡΟΣ",
+                    "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ": "Έσοδα Ιδιοκτήτη",
+                    "ΠΡΟΜΗΘΕΙΑ AIRSTAY": "Προμήθεια Airstay"
+                })
 
                 chart = alt.Chart(fixed_long).mark_line(point=True).encode(
                     x=alt.X('ΜΗΝΑΣ:N', sort=month_order, title="Μήνας"),
                     y=alt.Y('Ποσό:Q', title="€"),
-                    color=alt.Color('Κατηγορία:N',
-                                    scale=alt.Scale(domain=["ΤΖΙΡΟΣ", "ΕΣΟΔΑ ΙΔΙΟΚΤΗΤΗ"],
-                                                    range=["#1f77b4", "#2ca02c"])),
-                    tooltip=['ΜΗΝΑΣ', 'Κατηγορία', 'Ποσό (€)']
+                    color=alt.Color(
+                        'Κατηγορία:N',
+                        scale=alt.Scale(
+                            domain=["ΤΖΙΡΟΣ", "Έσοδα Ιδιοκτήτη", "Προμήθεια Airstay"],
+                            range=["#1f77b4", "#2ca02c", "#d62728"]
+                        )
+                    ),
+                    tooltip=[
+                        alt.Tooltip('ΜΗΝΑΣ:N', title='Μήνας'),
+                        alt.Tooltip('Κατηγορία:N', title='Κατηγορία'),
+                        alt.Tooltip('Ποσό:Q', title='Ποσό (€)', format=',.2f')
+                    ]
                 ).properties(width=700, height=400)
 
                 st.altair_chart(chart, use_container_width=True)
